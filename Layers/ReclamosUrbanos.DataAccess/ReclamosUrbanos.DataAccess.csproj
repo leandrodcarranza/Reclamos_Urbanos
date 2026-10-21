@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>a7951384-8a55-47a0-afc4-158c470e0716</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\ReclamosUrbanos.DataAccess.Stores.Sql\ReclamosUrbanos.DataAccess.Stores.Sql.csproj" />
+    <ProjectReference Include="..\ReclamosUrbanos.Entities\ReclamosUrbanos.Entities.csproj" />
+  </ItemGroup>
+
+</Project>

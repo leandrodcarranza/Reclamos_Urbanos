@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Backend/">
+    <Project Path="Backend/ReclamosUrbanos.Api/ReclamosUrbanos.Api.csproj" Id="5af8322b-f496-4ca3-9acd-2cc82bc56f23" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="Core/ReclamosUrbanos.Ai.Gemini/ReclamosUrbanos.Ai.Gemini.csproj" Id="2d075ce0-4d60-4060-af42-abba58680acb" />
+    <Project Path="Core/ReclamosUrbanos.DataAccess.Stores.Sql/ReclamosUrbanos.DataAccess.Stores.Sql.csproj" Id="f2e5ee54-1451-4569-9f87-e63462a60d98" />
+  </Folder>
+  <Folder Name="/Layers/">
+    <Project Path="Layers/ReclamosUrbanos.BusinessLogic/ReclamosUrbanos.BusinessLogic.csproj" Id="96c32efe-dd93-45e5-afd0-f072d28d1964" />
+    <Project Path="Layers/ReclamosUrbanos.DataAccess/ReclamosUrbanos.DataAccess.csproj" Id="feee6a89-1087-457f-a8bf-34bde79e2304" />
+    <Project Path="Layers/ReclamosUrbanos.Entities/ReclamosUrbanos.Entities.csproj" Id="837d14a1-549d-4a0c-90d2-e914ae50fab4" />
+    <Project Path="Layers/ReclamosUrbanos.Presentation/ReclamosUrbanos.Presentation.csproj" Id="d602f9f4-c956-486b-8bb7-5e994695352a" />
+  </Folder>
+</Solution>
