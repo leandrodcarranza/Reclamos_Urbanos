@@ -1,0 +1,6 @@
+@ReclamosUrbanos.Api_HostAddress = http://localhost:5121
+
+GET {{ReclamosUrbanos.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
