@@ -4,6 +4,7 @@ using ReclamosUrbanos.DataAccess;
 using ReclamosUrbanos.DataAccess.Stores;
 using ReclamosUrbanos.DataAccess.SqlStores;
 using ReclamosUrbanos.BusinessLogic.Managers;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,21 @@ builder.Services.AddScoped<INeighborhoodStore, NeighborhoodStore>();
 builder.Services.AddScoped<ICategoryManager, CategoryManager>();
 builder.Services.AddScoped<INeighborhoodManager, NeighborhoodManager>();
 
-builder.Services.AddControllers();
+// CORS: permite que el front de Next.js (en desarrollo) llame a la API
+const string FrontendCorsPolicy = "Frontend";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendCorsPolicy, policy =>
+        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
+// Los enums (Status, Priority) viajan como texto en lugar de número
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -38,6 +53,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseCors(FrontendCorsPolicy);
 
 app.MapControllers();
 
