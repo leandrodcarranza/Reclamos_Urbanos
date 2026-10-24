@@ -67,6 +67,7 @@ public class ReportController : ControllerBase
             var report = new Report
             {
                 Description = input.Description,
+                Address = input.Address,
                 CategoryId = input.CategoryId,
                 NeighborhoodId = input.NeighborhoodId
             };
@@ -97,6 +98,7 @@ public class ReportController : ControllerBase
                 return NotFound("El reclamo no existe.");
 
             report.Description = input.Description;
+            report.Address = input.Address;
             report.CategoryId = input.CategoryId;
             report.NeighborhoodId = input.NeighborhoodId;
 
@@ -158,6 +160,7 @@ public class ReportController : ControllerBase
         {
             Id = report.Id,
             Description = report.Description,
+            Address = report.Address,
             Summary = report.Summary,
             CategoryId = report.CategoryId,
             NeighborhoodId = report.NeighborhoodId,
