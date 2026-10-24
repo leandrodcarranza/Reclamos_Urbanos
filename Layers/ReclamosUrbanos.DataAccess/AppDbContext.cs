@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
+using ReclamosUrbanos.Entities;
 
 namespace ReclamosUrbanos.DataAccess;
 
@@ -8,16 +10,11 @@ public class AppDbContext : DbContext
     {
     }
 
-    // Cada integrante agrega su DbSet cuando se mergea su PR. Por ejemplo:
-    // public DbSet<Category> Categories => Set<Category>();
-    // public DbSet<Neighborhood> Neighborhoods => Set<Neighborhood>();
-    // public DbSet<Report> Reports => Set<Report>();
+    public DbSet<Report> Reports => Set<Report>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Carga automáticamente las clases IEntityTypeConfiguration<T> de este proyecto
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }
