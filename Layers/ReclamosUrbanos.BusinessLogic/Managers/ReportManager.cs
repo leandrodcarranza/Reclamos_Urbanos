@@ -7,10 +7,17 @@ namespace ReclamosUrbanos.BusinessLogic.Managers;
 public class ReportManager : IReportManager
 {
     private readonly IReportStore _reportStore;
+    private readonly ICategoryStore _categoryStore;
+    private readonly INeighborhoodStore _neighborhoodStore;
 
-    public ReportManager(IReportStore reportStore)
+    public ReportManager(
+        IReportStore reportStore,
+        ICategoryStore categoryStore,
+        INeighborhoodStore neighborhoodStore)
     {
         _reportStore = reportStore;
+        _categoryStore = categoryStore;
+        _neighborhoodStore = neighborhoodStore;
     }
 
     public async Task<List<Report>> GetAllAsync()
@@ -78,14 +85,10 @@ public class ReportManager : IReportManager
 
         if (string.IsNullOrWhiteSpace(report.Description))
             throw new ArgumentException("La descripción es obligatoria.");
-        ValidateAddress(report);   // NUEVO
 
-        if (report.CategoryId <= 0)
-            throw new ArgumentException("Debe indicar una categoría válida.");
+        ValidateAddress(report);
 
-        if (report.NeighborhoodId <= 0)
-            throw new ArgumentException("Debe indicar un barrio válido.");
-        
+        await ValidateCategoryAndNeighborhoodAsync(report);
 
         return await _reportStore.AddAsync(report);
     }
@@ -100,12 +103,10 @@ public class ReportManager : IReportManager
 
         if (string.IsNullOrWhiteSpace(report.Description))
             throw new ArgumentException("La descripción es obligatoria.");
+
         ValidateAddress(report);
 
-        if (report.CategoryId <= 0 ||
-            report.NeighborhoodId <= 0)
-            throw new ArgumentException(
-                "La categoría y el barrio deben ser válidos.");
+        await ValidateCategoryAndNeighborhoodAsync(report);
 
         var existingReport =
             await _reportStore.GetByIdAsync(report.Id);
@@ -145,6 +146,25 @@ public class ReportManager : IReportManager
         report.Status = newStatus;
 
         await _reportStore.UpdateAsync(report);
+    }
+
+    private async Task ValidateCategoryAndNeighborhoodAsync(Report report)
+    {
+        if (report.CategoryId <= 0)
+            throw new ArgumentException("Debe indicar una categoría válida.");
+
+        if (report.NeighborhoodId <= 0)
+            throw new ArgumentException("Debe indicar un barrio válido.");
+
+        var category = await _categoryStore.GetByIdAsync(report.CategoryId);
+
+        if (category == null)
+            throw new ArgumentException("La categoría indicada no existe.");
+
+        var neighborhood = await _neighborhoodStore.GetByIdAsync(report.NeighborhoodId);
+
+        if (neighborhood == null)
+            throw new ArgumentException("El barrio indicado no existe.");
     }
 
     private static void ValidateAddress(Report report)
