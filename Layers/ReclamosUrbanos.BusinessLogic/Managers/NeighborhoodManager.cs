@@ -1,6 +1,8 @@
 
 using ReclamosUrbanos.DataAccess.Stores;
 using ReclamosUrbanos.Entities;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace ReclamosUrbanos.BusinessLogic.Managers;
 
@@ -78,19 +80,31 @@ public class NeighborhoodManager : INeighborhoodManager
         await _store.UpdateAsync(neighborhood);
     }
 
-    public async Task DeleteAsync(int id)
+    
+public async Task DeleteAsync(int id)
+{
+    if (id <= 0)
+        throw new ArgumentException("El ID debe ser mayor a cero.");
+
+    var existing = await _store.GetByIdAsync(id);
+
+    if (existing == null)
+        throw new KeyNotFoundException("El barrio no existe.");
+
+    try
     {
-        if (id <= 0)
-            throw new ArgumentException("El ID debe ser mayor a cero.");
-
-        var existing = await _store.GetByIdAsync(id);
-
-        if (existing is null)
-            throw new KeyNotFoundException(
-                "El barrio no existe.");
-
         await _store.DeleteAsync(id);
     }
+   catch (DbUpdateException ex)
+    when (ex.InnerException is PostgresException pg &&
+          (pg.SqlState == PostgresErrorCodes.ForeignKeyViolation ||
+           pg.SqlState == "23001"))
+    {
+        throw new InvalidOperationException(
+            "No se puede eliminar el barrio porque tiene reclamos asociados.",
+            ex);
+    }
+}
 
     private static void ValidarNombre(string? name)
     {

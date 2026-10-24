@@ -117,21 +117,28 @@ public class NeighborhoodController : ControllerBase
         }
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+   
+
+[HttpDelete("{id:int}")]
+public async Task<IActionResult> Delete(int id)
+{
+    if (id <= 0)
+        return BadRequest("El ID debe ser mayor a cero.");
+
+    try
     {
-        if (id <= 0)
-            return BadRequest("El ID debe ser mayor a cero.");
+        await _manager.DeleteAsync(id);
 
-        try
-        {
-            await _manager.DeleteAsync(id);
-
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        return NoContent();
     }
+    catch (KeyNotFoundException ex)
+    {
+        return NotFound(ex.Message);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Conflict(ex.Message);
+    }
+}
+
 }
