@@ -5,6 +5,7 @@ using ReclamosUrbanos.DataAccess.Stores;
 using ReclamosUrbanos.DataAccess.SqlStores;
 using ReclamosUrbanos.BusinessLogic.Managers;
 using System.Text.Json.Serialization;
+using ReclamosUrbanos.Ai.Gemini;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,10 @@ builder.Services.AddScoped<INeighborhoodStore, NeighborhoodStore>();
 
 builder.Services.AddScoped<ICategoryManager, CategoryManager>();
 builder.Services.AddScoped<INeighborhoodManager, NeighborhoodManager>();
+
+// IA (Gemini)
+builder.Services.AddGeminiAiService(builder.Configuration);
+builder.Services.AddScoped<IReportAnalysisManager, ReportAnalysisManager>();
 
 // CORS: permite que el front de Next.js (en desarrollo) llame a la API
 const string FrontendCorsPolicy = "Frontend";
