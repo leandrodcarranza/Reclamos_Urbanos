@@ -78,12 +78,14 @@ public class ReportManager : IReportManager
 
         if (string.IsNullOrWhiteSpace(report.Description))
             throw new ArgumentException("La descripción es obligatoria.");
+        ValidateAddress(report);   // NUEVO
 
         if (report.CategoryId <= 0)
             throw new ArgumentException("Debe indicar una categoría válida.");
 
         if (report.NeighborhoodId <= 0)
             throw new ArgumentException("Debe indicar un barrio válido.");
+        
 
         return await _reportStore.AddAsync(report);
     }
@@ -98,6 +100,7 @@ public class ReportManager : IReportManager
 
         if (string.IsNullOrWhiteSpace(report.Description))
             throw new ArgumentException("La descripción es obligatoria.");
+        ValidateAddress(report);
 
         if (report.CategoryId <= 0 ||
             report.NeighborhoodId <= 0)
@@ -142,5 +145,17 @@ public class ReportManager : IReportManager
         report.Status = newStatus;
 
         await _reportStore.UpdateAsync(report);
+    }
+
+    private static void ValidateAddress(Report report)
+    {
+        if (string.IsNullOrWhiteSpace(report.Address))
+            throw new ArgumentException("La dirección es obligatoria.");
+
+        report.Address = report.Address.Trim();
+
+        if (report.Address.Length > 200)
+            throw new ArgumentException(
+                "La dirección no puede superar los 200 caracteres.");
     }
 }

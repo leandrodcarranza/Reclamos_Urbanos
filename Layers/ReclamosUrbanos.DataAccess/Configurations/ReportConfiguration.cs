@@ -16,6 +16,10 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(r => r.Description)
             .IsRequired();
 
+        builder.Property(r => r.Address)     
+    .IsRequired()
+    .HasMaxLength(200);
+
         builder.Property(r => r.Summary);
 
         builder.Property(r => r.Status)

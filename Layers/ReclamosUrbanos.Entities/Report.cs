@@ -6,6 +6,8 @@ public class Report
 
     public string Description { get; set; } = string.Empty;
 
+    public string Address { get; set; } = string.Empty;
+
     public string? Summary { get; set; }
 
     public int CategoryId { get; set; }
