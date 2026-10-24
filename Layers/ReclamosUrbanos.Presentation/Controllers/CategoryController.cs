@@ -122,6 +122,7 @@ public async Task<IActionResult> Update(
     }
 }
 
+
 [HttpDelete("{id:int}")]
 public async Task<IActionResult> Delete(int id)
 {
@@ -137,6 +138,10 @@ public async Task<IActionResult> Delete(int id)
     catch (KeyNotFoundException ex)
     {
         return NotFound(ex.Message);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Conflict(ex.Message);
     }
 }
 
