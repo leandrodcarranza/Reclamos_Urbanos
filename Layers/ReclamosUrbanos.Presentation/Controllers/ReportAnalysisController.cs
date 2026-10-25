@@ -30,7 +30,8 @@ public class ReportAnalysisController : ControllerBase
                 CategoryId = analysis.CategoryId,
                 Priority = analysis.Priority,
                 Summary = analysis.Summary,
-                UsedFallback = analysis.UsedFallback
+                UsedFallback = analysis.UsedFallback,
+                IsEmergency = analysis.IsEmergency,
             });
         }
         catch (ArgumentException ex)

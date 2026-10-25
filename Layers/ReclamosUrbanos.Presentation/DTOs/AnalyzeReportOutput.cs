@@ -11,4 +11,6 @@ public class AnalyzeReportOutput
     public string Summary { get; set; } = string.Empty;
 
     public bool UsedFallback { get; set; }
+
+    public bool IsEmergency { get; set; }
 }
