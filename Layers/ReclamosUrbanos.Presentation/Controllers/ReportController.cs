@@ -27,10 +27,7 @@ public class ReportController : ControllerBase
         try
         {
             var reports = await _reportManager.GetFilteredAsync(
-                categoryId,
-                neighborhoodId,
-                status,
-                priority);
+                categoryId, neighborhoodId, status, priority);
 
             return Ok(reports.Select(ToOutput).ToList());
         }
@@ -69,7 +66,9 @@ public class ReportController : ControllerBase
                 Description = input.Description,
                 Address = input.Address,
                 CategoryId = input.CategoryId,
-                NeighborhoodId = input.NeighborhoodId
+                NeighborhoodId = input.NeighborhoodId,
+                Priority = input.Priority ?? Priority.Medium,
+                Summary = input.Summary
             };
 
             var created = await _reportManager.AddAsync(report);

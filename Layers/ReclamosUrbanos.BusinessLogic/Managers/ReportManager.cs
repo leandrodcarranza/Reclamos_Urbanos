@@ -87,6 +87,7 @@ public class ReportManager : IReportManager
             throw new ArgumentException("La descripción es obligatoria.");
 
         ValidateAddress(report);
+        ValidateAiFields(report);
 
         await ValidateCategoryAndNeighborhoodAsync(report);
 
@@ -105,6 +106,7 @@ public class ReportManager : IReportManager
             throw new ArgumentException("La descripción es obligatoria.");
 
         ValidateAddress(report);
+        ValidateAiFields(report);
 
         await ValidateCategoryAndNeighborhoodAsync(report);
 
@@ -177,5 +179,20 @@ public class ReportManager : IReportManager
         if (report.Address.Length > 200)
             throw new ArgumentException(
                 "La dirección no puede superar los 200 caracteres.");
+    }
+
+    private static void ValidateAiFields(Report report)
+    {
+        if (!Enum.IsDefined(typeof(Priority), report.Priority))
+            throw new ArgumentException("La prioridad indicada no es válida.");
+
+        if (report.Summary != null)
+        {
+            report.Summary = report.Summary.Trim();
+
+            if (report.Summary.Length > 500)
+                throw new ArgumentException(
+                    "El resumen no puede superar los 500 caracteres.");
+        }
     }
 }
