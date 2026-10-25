@@ -1,0 +1,695 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URBANA | Gestión de Reclamos</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b1120;
+            color: #f8fafc;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            padding: 30px 20px;
+            background: #111827;
+            border-right: 1px solid #253047;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #60a5fa;
+            letter-spacing: 1px;
+        }
+
+        .menu {
+            margin-top: 45px;
+        }
+
+        .menu p {
+            padding: 14px;
+            color: #94a3b8;
+            border-radius: 9px;
+        }
+
+        .menu .active {
+            color: #93c5fd;
+            background: #1e3a5f;
+        }
+
+        .main {
+            margin-left: 240px;
+            padding: 40px;
+            max-width: 1800px;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+            margin-top: 35px;
+        }
+
+        .card {
+            background: #151f32;
+            border: 1px solid #263449;
+            border-radius: 15px;
+            padding: 24px;
+        }
+
+        .card h3 {
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .number {
+            font-size: 34px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        .management {
+            margin-top: 30px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        input, select {
+            padding: 12px;
+            background: #0b1120;
+            color: white;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: 1px solid #60a5fa;
+        }
+
+        #buscador {
+            flex: 2;
+            min-width: 180px;
+        }
+
+        .filters select {
+            flex: 1;
+            min-width: 145px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 16px;
+            color: #94a3b8;
+            font-size: 13px;
+            border-bottom: 1px solid #334155;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #263449;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #1b2940;
+        }
+
+        .priority-high {
+            color: #f87171;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .priority-low {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .status-select {
+            background: #1e3a5f;
+            padding: 9px;
+            border-radius: 7px;
+        }
+
+        .status-select:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .empty {
+            display: none;
+            padding: 35px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1100px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">◈ URBANA</div>
+
+        <nav class="menu">
+            <p class="active">▦ Dashboard</p>
+            <p>▤ Reclamos</p>
+            <p>◷ Estadísticas</p>
+        </nav>
+    </aside>
+
+    <main class="main">
+
+        <h1>Panel de reclamos</h1>
+
+        <p class="subtitle">
+            Monitoreo y gestión de incidencias urbanas
+        </p>
+
+        <!-- INDICADORES -->
+        <section class="cards">
+
+            <div class="card">
+                <h3>Total de reclamos</h3>
+                <div class="number" id="totalReclamos">0</div>
+            </div>
+
+            <div class="card">
+                <h3>Pendientes</h3>
+                <div class="number" id="totalPendientes">0</div>
+            </div>
+
+            <div class="card">
+                <h3>En proceso</h3>
+                <div class="number" id="totalEnProceso">0</div>
+            </div>
+
+            <div class="card">
+                <h3>Resueltos</h3>
+                <div class="number" id="totalResueltos">0</div>
+            </div>
+
+        </section>
+
+        <!-- GESTIÓN DE RECLAMOS -->
+        <section class="card management">
+
+            <h2>Gestión de reclamos</h2>
+
+            <p class="subtitle">
+                Consultá y administrá los reclamos registrados.
+            </p>
+
+            <!-- FILTROS -->
+            <div class="filters">
+
+                <input
+                    type="text"
+                    id="buscador"
+                    placeholder="Buscar reclamo..."
+                >
+
+                <select id="filtroCategoria">
+                    <option value="">Todas las categorías</option>
+                </select>
+
+                <select id="filtroBarrio">
+                    <option value="">Todos los barrios</option>
+                </select>
+
+                <select id="filtroEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="Pending">Pendiente</option>
+                    <option value="InProgress">En proceso</option>
+                    <option value="Resolved">Resuelto</option>
+                </select>
+
+                <select id="filtroPrioridad">
+                    <option value="">Todas las prioridades</option>
+                    <option value="High">Alta</option>
+                    <option value="Medium">Media</option>
+                    <option value="Low">Baja</option>
+                </select>
+
+            </div>
+
+            <!-- TABLA -->
+            <div class="table-container">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Barrio</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaReclamos"></tbody>
+                </table>
+
+                <div id="sinResultados" class="empty">
+                    No se encontraron reclamos con esos filtros.
+                </div>
+
+            </div>
+
+            <p class="footer-note">
+                Datos obtenidos de la API de Reclamos Urbanos.
+                Los cambios de estado se envían al servidor.
+            </p>
+
+        </section>
+
+    </main>
+
+    <script>
+        const API_URL = "http://localhost:5121/api";
+
+        const buscador = document.getElementById("buscador");
+        const filtroCategoria = document.getElementById("filtroCategoria");
+        const filtroBarrio = document.getElementById("filtroBarrio");
+        const filtroEstado = document.getElementById("filtroEstado");
+        const filtroPrioridad = document.getElementById("filtroPrioridad");
+
+        const tabla = document.getElementById("tablaReclamos");
+        const sinResultados = document.getElementById("sinResultados");
+
+        let reclamos = [];
+        let categorias = [];
+        let barrios = [];
+
+        const estados = {
+            Pending: "Pendiente",
+            InProgress: "En proceso",
+            Resolved: "Resuelto"
+        };
+
+        const prioridades = {
+            High: "Alta",
+            Medium: "Media",
+            Low: "Baja"
+        };
+
+        function escaparHTML(valor) {
+            return String(valor ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function obtenerNombreCategoria(id) {
+            const categoria = categorias.find(
+                item => Number(item.id) === Number(id)
+            );
+
+            return categoria ? categoria.name : "Sin categoría";
+        }
+
+        function obtenerNombreBarrio(id) {
+            const barrio = barrios.find(
+                item => Number(item.id) === Number(id)
+            );
+
+            return barrio ? barrio.name : "Sin barrio";
+        }
+
+        function cargarOpciones(select, elementos, etiqueta) {
+            select.innerHTML = `<option value="">${etiqueta}</option>`;
+
+            elementos.forEach(function (elemento) {
+                const opcion = document.createElement("option");
+                opcion.value = String(elemento.id);
+                opcion.textContent = elemento.name;
+                select.appendChild(opcion);
+            });
+        }
+
+        function actualizarIndicadores() {
+            const pendientes = reclamos.filter(
+                reclamo => reclamo.status === "Pending"
+            ).length;
+
+            const enProceso = reclamos.filter(
+                reclamo => reclamo.status === "InProgress"
+            ).length;
+
+            const resueltos = reclamos.filter(
+                reclamo => reclamo.status === "Resolved"
+            ).length;
+
+            document.getElementById("totalReclamos").textContent =
+                reclamos.length;
+
+            document.getElementById("totalPendientes").textContent =
+                pendientes;
+
+            document.getElementById("totalEnProceso").textContent =
+                enProceso;
+
+            document.getElementById("totalResueltos").textContent =
+                resueltos;
+        }
+
+        function aplicarFiltros() {
+            const texto = buscador.value.toLowerCase().trim();
+            const categoria = filtroCategoria.value;
+            const barrio = filtroBarrio.value;
+            const estado = filtroEstado.value;
+            const prioridad = filtroPrioridad.value;
+
+            const filtrados = reclamos.filter(function (reclamo) {
+                const nombreCategoria =
+                    obtenerNombreCategoria(reclamo.categoryId);
+
+                const nombreBarrio =
+                    obtenerNombreBarrio(reclamo.neighborhoodId);
+
+                const contenido = [
+                    reclamo.id,
+                    reclamo.description,
+                    reclamo.address,
+                    reclamo.summary,
+                    nombreCategoria,
+                    nombreBarrio
+                ].join(" ").toLowerCase();
+
+                const coincideBusqueda =
+                    contenido.includes(texto);
+
+                const coincideCategoria =
+                    categoria === "" ||
+                    String(reclamo.categoryId) === categoria;
+
+                const coincideBarrio =
+                    barrio === "" ||
+                    String(reclamo.neighborhoodId) === barrio;
+
+                const coincideEstado =
+                    estado === "" ||
+                    reclamo.status === estado;
+
+                const coincidePrioridad =
+                    prioridad === "" ||
+                    reclamo.priority === prioridad;
+
+                return (
+                    coincideBusqueda &&
+                    coincideCategoria &&
+                    coincideBarrio &&
+                    coincideEstado &&
+                    coincidePrioridad
+                );
+            });
+
+            mostrarReclamos(filtrados);
+        }
+
+        function mostrarReclamos(lista) {
+            tabla.innerHTML = "";
+
+            lista.forEach(function (reclamo) {
+                const nombreCategoria =
+                    obtenerNombreCategoria(reclamo.categoryId);
+
+                const nombreBarrio =
+                    obtenerNombreBarrio(reclamo.neighborhoodId);
+
+                const prioridad =
+                    prioridades[reclamo.priority] || reclamo.priority;
+
+                let clasePrioridad = "";
+
+                if (reclamo.priority === "High") {
+                    clasePrioridad = "priority-high";
+                } else if (reclamo.priority === "Medium") {
+                    clasePrioridad = "priority-medium";
+                } else if (reclamo.priority === "Low") {
+                    clasePrioridad = "priority-low";
+                }
+
+                const fila = document.createElement("tr");
+
+                fila.innerHTML = `
+                    <td>#${escaparHTML(reclamo.id)}</td>
+
+                    <td>
+                        ${escaparHTML(reclamo.description)}
+                    </td>
+
+                    <td>
+                        ${escaparHTML(nombreCategoria)}
+                    </td>
+
+                    <td>
+                        ${escaparHTML(nombreBarrio)}
+                    </td>
+
+                    <td class="${clasePrioridad}">
+                        ${escaparHTML(prioridad)}
+                    </td>
+
+                    <td>
+                        <select class="status-select">
+                            <option value="Pending">Pendiente</option>
+                            <option value="InProgress">En proceso</option>
+                            <option value="Resolved">Resuelto</option>
+                        </select>
+                    </td>
+                `;
+
+                const selectorEstado =
+                    fila.querySelector(".status-select");
+
+                selectorEstado.value = reclamo.status;
+
+                // GUARDAR CAMBIO DE ESTADO EN LA API
+                selectorEstado.addEventListener("change", async function () {
+                    const estadoAnterior = reclamo.status;
+                    const nuevoEstado = selectorEstado.value;
+
+                    if (nuevoEstado === estadoAnterior) {
+                        return;
+                    }
+
+                    selectorEstado.disabled = true;
+
+                    try {
+                        const respuesta = await fetch(
+                            `${API_URL}/reports/${reclamo.id}/status`,
+                            {
+                                method: "PATCH",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(nuevoEstado)
+                            }
+                        );
+
+                        if (!respuesta.ok) {
+                            const detalle = await respuesta.text();
+                            throw new Error(
+                                `Error HTTP ${respuesta.status}: ${detalle}`
+                            );
+                        }
+
+                        reclamo.status = nuevoEstado;
+
+                        actualizarIndicadores();
+                        aplicarFiltros();
+
+                        console.log(
+                            `Estado del reclamo #${reclamo.id} guardado:`,
+                            nuevoEstado
+                        );
+
+                    } catch (error) {
+                        console.error(
+                            "Error al guardar el estado:",
+                            error
+                        );
+
+                        reclamo.status = estadoAnterior;
+                        selectorEstado.value = estadoAnterior;
+
+                        alert(
+                            "No se pudo guardar el cambio de estado. " +
+                            "Verificá que la API esté funcionando."
+                        );
+
+                    } finally {
+                        selectorEstado.disabled = false;
+                    }
+                });
+
+                tabla.appendChild(fila);
+            });
+
+            sinResultados.style.display =
+                lista.length === 0 ? "block" : "none";
+        }
+
+        async function obtenerDatos() {
+            sinResultados.style.display = "none";
+
+            try {
+                const respuestas = await Promise.all([
+                    fetch(`${API_URL}/reports`),
+                    fetch(`${API_URL}/categories`),
+                    fetch(`${API_URL}/neighborhoods`)
+                ]);
+
+                for (const respuesta of respuestas) {
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            `Error HTTP ${respuesta.status}`
+                        );
+                    }
+                }
+
+                const datos = await Promise.all(
+                    respuestas.map(respuesta => respuesta.json())
+                );
+
+                reclamos = datos[0];
+                categorias = datos[1];
+                barrios = datos[2];
+
+                console.log(
+                    "Reclamos reales de PostgreSQL:",
+                    reclamos
+                );
+
+                cargarOpciones(
+                    filtroCategoria,
+                    categorias,
+                    "Todas las categorías"
+                );
+
+                cargarOpciones(
+                    filtroBarrio,
+                    barrios,
+                    "Todos los barrios"
+                );
+
+                actualizarIndicadores();
+                aplicarFiltros();
+
+            } catch (error) {
+                console.error(
+                    "Error al conectar con la API:",
+                    error
+                );
+
+                tabla.innerHTML = "";
+
+                sinResultados.textContent =
+                    "No se pudieron cargar los reclamos. " +
+                    "Verificá que la API esté funcionando.";
+
+                sinResultados.style.display = "block";
+            }
+        }
+
+        buscador.addEventListener("input", aplicarFiltros);
+
+        filtroCategoria.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        filtroBarrio.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        filtroEstado.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        filtroPrioridad.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        obtenerDatos();
+    </script>
+
+</body>
+</html>
