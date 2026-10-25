@@ -1,5 +1,6 @@
-// Tipos que reflejan los DTOs de la API (ReclamosUrbanos.Presentation/DTOs).
-// La API serializa en camelCase y los enums como texto.
+
+ // Tipos que reflejan los DTOs de la API (ReclamosUrbanos.Presentation/DTOs).
+ // La API serializa en camelCase y los enums como texto.
 
 export type Status = "Pending" | "InProgress" | "Resolved";
 export type Priority = "Low" | "Medium" | "High";
@@ -61,10 +62,18 @@ export type UpdateReportInput = CreateReportInput;
 export interface AnalyzeResult {
   /** null si la IA no pudo determinar la categoría: el usuario debe elegirla. */
   categoryId: number | null;
+
+  /** Prioridad sugerida por la inteligencia artificial. */
   priority: Priority;
+
+  /** Resumen generado por la inteligencia artificial. */
   summary: string;
+
   /** true si la IA falló y se devolvió el plan B. */
   usedFallback: boolean;
+
+  /** true si la IA detectó una posible emergencia o delito. */
+  isEmergency: boolean;
 }
 
 export interface CategoryInput {

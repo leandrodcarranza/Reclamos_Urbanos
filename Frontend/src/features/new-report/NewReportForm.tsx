@@ -111,7 +111,9 @@ export function NewReportForm() {
 
       if (
         result.categoryId !== null &&
-        categories.some((category) => category.id === result.categoryId)
+        categories.some(
+          (category) => category.id === result.categoryId
+        )
       ) {
         setCategoryId(String(result.categoryId));
       }
@@ -126,7 +128,9 @@ export function NewReportForm() {
     }
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     if (saving || analyzing || createdReport) return;
@@ -145,12 +149,17 @@ export function NewReportForm() {
     const selectedNeighborhood = Number(neighborhoodId);
 
     if (
-      !categories.some((category) => category.id === selectedCategory) ||
+      !categories.some(
+        (category) => category.id === selectedCategory
+      ) ||
       !neighborhoods.some(
-        (neighborhood) => neighborhood.id === selectedNeighborhood
+        (neighborhood) =>
+          neighborhood.id === selectedNeighborhood
       )
     ) {
-      setSaveError("Seleccioná una categoría y un barrio válidos.");
+      setSaveError(
+        "Seleccioná una categoría y un barrio válidos."
+      );
       return;
     }
 
@@ -191,6 +200,8 @@ export function NewReportForm() {
     setSaveError("");
     setCreatedReport(null);
   }
+
+  // Pantalla de confirmación
 
   if (createdReport) {
     return (
@@ -267,7 +278,13 @@ export function NewReportForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid items-start gap-6 lg:grid-cols-3">
+
+          {/* COLUMNA PRINCIPAL */}
+
           <div className="space-y-5 lg:col-span-2">
+
+            {/* INFORMACIÓN DEL PROBLEMA */}
+
             <div className="rounded-md border border-line bg-surface p-6">
               <h2 className="text-xl font-semibold">
                 Información del problema
@@ -304,6 +321,7 @@ export function NewReportForm() {
                     <span>
                       Describí el problema con claridad.
                     </span>
+
                     <span>{description.length}/2000</span>
                   </div>
                 </div>
@@ -321,13 +339,17 @@ export function NewReportForm() {
                     required
                     maxLength={200}
                     value={address}
-                    onChange={(event) => setAddress(event.target.value)}
+                    onChange={(event) =>
+                      setAddress(event.target.value)
+                    }
                     placeholder="Ej.: Av. Colón 1500"
                     className={fieldClass}
                   />
                 </div>
               </div>
             </div>
+
+            {/* CLASIFICACIÓN DEL RECLAMO */}
 
             <div className="rounded-md border border-line bg-surface p-6">
               <h2 className="text-xl font-semibold">
@@ -352,8 +374,13 @@ export function NewReportForm() {
                     id="category"
                     required
                     value={categoryId}
-                    onChange={(event) => setCategoryId(event.target.value)}
-                    disabled={loadingOptions || Boolean(optionsError)}
+                    onChange={(event) =>
+                      setCategoryId(event.target.value)
+                    }
+                    disabled={
+                      loadingOptions ||
+                      Boolean(optionsError)
+                    }
                     className={fieldClass}
                   >
                     <option value="">
@@ -361,7 +388,10 @@ export function NewReportForm() {
                     </option>
 
                     {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
+                      <option
+                        key={category.id}
+                        value={category.id}
+                      >
                         {category.name}
                       </option>
                     ))}
@@ -380,8 +410,13 @@ export function NewReportForm() {
                     id="neighborhood"
                     required
                     value={neighborhoodId}
-                    onChange={(event) => setNeighborhoodId(event.target.value)}
-                    disabled={loadingOptions || Boolean(optionsError)}
+                    onChange={(event) =>
+                      setNeighborhoodId(event.target.value)
+                    }
+                    disabled={
+                      loadingOptions ||
+                      Boolean(optionsError)
+                    }
                     className={fieldClass}
                   >
                     <option value="">
@@ -412,12 +447,17 @@ export function NewReportForm() {
                   id="priority"
                   value={priority}
                   onChange={(event) =>
-                    setPriority(event.target.value as Priority)
+                    setPriority(
+                      event.target.value as Priority
+                    )
                   }
                   className={fieldClass}
                 >
                   {PRIORITIES.map((item) => (
-                    <option key={item.value} value={item.value}>
+                    <option
+                      key={item.value}
+                      value={item.value}
+                    >
                       {item.label}
                     </option>
                   ))}
@@ -429,17 +469,25 @@ export function NewReportForm() {
               </div>
 
               {loadingOptions && (
-                <p role="status" className="mt-4 text-sm text-muted">
+                <p
+                  role="status"
+                  className="mt-4 text-sm text-muted"
+                >
                   Cargando categorías y barrios...
                 </p>
               )}
 
               {optionsError && (
-                <p role="alert" className="mt-4 text-sm text-high">
+                <p
+                  role="alert"
+                  className="mt-4 text-sm text-high"
+                >
                   {optionsError}
                 </p>
               )}
             </div>
+
+            {/* RESUMEN DEL RECLAMO */}
 
             <div className="rounded-md border border-line bg-surface p-6">
               <h2 className="text-xl font-semibold">
@@ -457,7 +505,9 @@ export function NewReportForm() {
                 rows={3}
                 maxLength={200}
                 value={summary}
-                onChange={(event) => setSummary(event.target.value)}
+                onChange={(event) =>
+                  setSummary(event.target.value)
+                }
                 placeholder="Resumen breve del problema..."
                 className={`mt-4 ${fieldClass}`}
               />
@@ -467,6 +517,8 @@ export function NewReportForm() {
               </p>
             </div>
 
+            {/* ERRORES DE REGISTRO */}
+
             {saveError && (
               <div
                 role="alert"
@@ -475,6 +527,8 @@ export function NewReportForm() {
                 {saveError}
               </div>
             )}
+
+            {/* BOTÓN DE REGISTRO */}
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-muted">
@@ -498,6 +552,8 @@ export function NewReportForm() {
             </div>
           </div>
 
+          {/* PANEL DE ASISTENCIA INTELIGENTE */}
+
           <aside className="h-fit rounded-md border border-line bg-surface p-6">
             <div className="mb-4 inline-flex rounded-sm bg-accent-soft px-3 py-1 text-sm font-medium text-accent-strong">
               Asistencia inteligente
@@ -511,6 +567,8 @@ export function NewReportForm() {
               Gemini analiza la descripción y propone
               una categoría, prioridad y resumen.
             </p>
+
+            {/* SUGERENCIAS DE GEMINI */}
 
             <div className="mt-6 space-y-3">
               <div className="rounded-sm bg-canvas p-3 text-sm">
@@ -556,6 +614,38 @@ export function NewReportForm() {
               </div>
             </div>
 
+            {/*
+              NUEVO: ADVERTENCIA DE EMERGENCIA
+
+              Se muestra solamente cuando:
+              1. Existe un análisis vigente.
+              2. Gemini devuelve isEmergency: true.
+
+              role="alert" permite anunciar
+              la advertencia a lectores de pantalla.
+            */}
+
+            {analysisIsCurrent &&
+              analysis.isEmergency === true && (
+                <div
+                  role="alert"
+                  className="mt-4 rounded-sm border border-high bg-high-soft p-4 text-sm text-high"
+                >
+                  <p className="font-semibold">
+                    Atención: posible emergencia
+                  </p>
+
+                  <p className="mt-2">
+                    Si es una emergencia o un delito,
+                    llamá al 911. Este sistema es solo
+                    para reclamos de infraestructura
+                    y servicios urbanos.
+                  </p>
+                </div>
+              )}
+
+            {/* AVISO DE ANÁLISIS ALTERNATIVO */}
+
             {analysisIsCurrent && analysis.usedFallback && (
               <p
                 role="status"
@@ -566,12 +656,19 @@ export function NewReportForm() {
               </p>
             )}
 
+            {/* AVISO DE DESCRIPCIÓN MODIFICADA */}
+
             {analysis !== null && !analysisIsCurrent && (
-              <p role="status" className="mt-4 text-sm text-pending">
+              <p
+                role="status"
+                className="mt-4 text-sm text-pending"
+              >
                 Modificaste la descripción. Volvé a analizar
                 para actualizar las sugerencias.
               </p>
             )}
+
+            {/* ACLARACIÓN SOBRE LA IA */}
 
             <div className="mt-5 rounded-sm border border-line p-3">
               <p className="text-xs text-muted">
@@ -579,6 +676,8 @@ export function NewReportForm() {
                 Revisá los datos antes de registrar el reclamo.
               </p>
             </div>
+
+            {/* BOTÓN DE ANÁLISIS */}
 
             <button
               type="button"
@@ -600,7 +699,10 @@ export function NewReportForm() {
             </button>
 
             {analysisError && (
-              <p role="alert" className="mt-3 text-sm text-high">
+              <p
+                role="alert"
+                className="mt-3 text-sm text-high"
+              >
                 {analysisError}
               </p>
             )}
