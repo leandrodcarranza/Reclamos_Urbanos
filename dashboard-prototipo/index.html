@@ -173,6 +173,11 @@
             border-radius: 7px;
         }
 
+        .status-select:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
         .empty {
             display: none;
             padding: 35px;
@@ -276,30 +281,24 @@
 
                 <select id="filtroCategoria">
                     <option value="">Todas las categorías</option>
-                    <option value="Baches">Baches</option>
-                    <option value="Alumbrado">Alumbrado</option>
-                    <option value="Basura">Basura</option>
                 </select>
 
                 <select id="filtroBarrio">
                     <option value="">Todos los barrios</option>
-                    <option value="Centro">Centro</option>
-                    <option value="Nueva Córdoba">Nueva Córdoba</option>
-                    <option value="General Paz">General Paz</option>
                 </select>
 
                 <select id="filtroEstado">
                     <option value="">Todos los estados</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="En proceso">En proceso</option>
-                    <option value="Resuelto">Resuelto</option>
+                    <option value="Pending">Pendiente</option>
+                    <option value="InProgress">En proceso</option>
+                    <option value="Resolved">Resuelto</option>
                 </select>
 
                 <select id="filtroPrioridad">
                     <option value="">Todas las prioridades</option>
-                    <option value="Alta">Alta</option>
-                    <option value="Media">Media</option>
-                    <option value="Baja">Baja</option>
+                    <option value="High">Alta</option>
+                    <option value="Medium">Media</option>
+                    <option value="Low">Baja</option>
                 </select>
 
             </div>
@@ -319,54 +318,7 @@
                         </tr>
                     </thead>
 
-                    <tbody id="tablaReclamos">
-
-                        <tr>
-                            <td>#001</td>
-                            <td>Bache en avenida principal</td>
-                            <td>Baches</td>
-                            <td>Centro</td>
-                            <td class="priority-high">Alta</td>
-                            <td>
-                                <select class="status-select">
-                                    <option selected>Pendiente</option>
-                                    <option>En proceso</option>
-                                    <option>Resuelto</option>
-                                </select>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>#002</td>
-                            <td>Luminaria fuera de servicio</td>
-                            <td>Alumbrado</td>
-                            <td>Nueva Córdoba</td>
-                            <td class="priority-medium">Media</td>
-                            <td>
-                                <select class="status-select">
-                                    <option>Pendiente</option>
-                                    <option selected>En proceso</option>
-                                    <option>Resuelto</option>
-                                </select>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>#003</td>
-                            <td>Acumulación de residuos</td>
-                            <td>Basura</td>
-                            <td>General Paz</td>
-                            <td class="priority-low">Baja</td>
-                            <td>
-                                <select class="status-select">
-                                    <option>Pendiente</option>
-                                    <option>En proceso</option>
-                                    <option selected>Resuelto</option>
-                                </select>
-                            </td>
-                        </tr>
-
-                    </tbody>
+                    <tbody id="tablaReclamos"></tbody>
                 </table>
 
                 <div id="sinResultados" class="empty">
@@ -376,8 +328,8 @@
             </div>
 
             <p class="footer-note">
-                Prototipo visual con datos de ejemplo.
-                Los cambios todavía no se guardan en la base de datos.
+                Datos obtenidos de la API de Reclamos Urbanos.
+                Los cambios de estado se envían al servidor.
             </p>
 
         </section>
@@ -385,95 +337,84 @@
     </main>
 
     <script>
+        const API_URL = "http://localhost:5121/api";
+
         const buscador = document.getElementById("buscador");
         const filtroCategoria = document.getElementById("filtroCategoria");
         const filtroBarrio = document.getElementById("filtroBarrio");
         const filtroEstado = document.getElementById("filtroEstado");
         const filtroPrioridad = document.getElementById("filtroPrioridad");
 
-        const filas = document.querySelectorAll("#tablaReclamos tr");
+        const tabla = document.getElementById("tablaReclamos");
         const sinResultados = document.getElementById("sinResultados");
 
-        function aplicarFiltros() {
-            const texto = buscador.value.toLowerCase().trim();
-            const categoria = filtroCategoria.value;
-            const barrio = filtroBarrio.value;
-            const estado = filtroEstado.value;
-            const prioridad = filtroPrioridad.value;
+        let reclamos = [];
+        let categorias = [];
+        let barrios = [];
 
-            let cantidadVisible = 0;
+        const estados = {
+            Pending: "Pendiente",
+            InProgress: "En proceso",
+            Resolved: "Resuelto"
+        };
 
-            filas.forEach(function (fila) {
-                const id = fila.cells[0].textContent.trim();
-                const descripcion = fila.cells[1].textContent.trim();
-                const categoriaReclamo = fila.cells[2].textContent.trim();
-                const barrioReclamo = fila.cells[3].textContent.trim();
-                const prioridadReclamo = fila.cells[4].textContent.trim();
-                const estadoReclamo =
-                    fila.cells[5].querySelector("select").value;
+        const prioridades = {
+            High: "Alta",
+            Medium: "Media",
+            Low: "Baja"
+        };
 
-                const textoReclamo =
-                    (id + " " + descripcion + " " +
-                     categoriaReclamo + " " + barrioReclamo)
-                    .toLowerCase();
+        function escaparHTML(valor) {
+            return String(valor ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
 
-                const coincideBusqueda =
-                    textoReclamo.includes(texto);
+        function obtenerNombreCategoria(id) {
+            const categoria = categorias.find(
+                item => Number(item.id) === Number(id)
+            );
 
-                const coincideCategoria =
-                    categoria === "" ||
-                    categoriaReclamo === categoria;
+            return categoria ? categoria.name : "Sin categoría";
+        }
 
-                const coincideBarrio =
-                    barrio === "" ||
-                    barrioReclamo === barrio;
+        function obtenerNombreBarrio(id) {
+            const barrio = barrios.find(
+                item => Number(item.id) === Number(id)
+            );
 
-                const coincideEstado =
-                    estado === "" ||
-                    estadoReclamo === estado;
+            return barrio ? barrio.name : "Sin barrio";
+        }
 
-                const coincidePrioridad =
-                    prioridad === "" ||
-                    prioridadReclamo === prioridad;
+        function cargarOpciones(select, elementos, etiqueta) {
+            select.innerHTML = `<option value="">${etiqueta}</option>`;
 
-                const mostrar =
-                    coincideBusqueda &&
-                    coincideCategoria &&
-                    coincideBarrio &&
-                    coincideEstado &&
-                    coincidePrioridad;
-
-                fila.style.display = mostrar ? "" : "none";
-
-                if (mostrar) {
-                    cantidadVisible++;
-                }
+            elementos.forEach(function (elemento) {
+                const opcion = document.createElement("option");
+                opcion.value = String(elemento.id);
+                opcion.textContent = elemento.name;
+                select.appendChild(opcion);
             });
-
-            sinResultados.style.display =
-                cantidadVisible === 0 ? "block" : "none";
         }
 
         function actualizarIndicadores() {
-            let pendientes = 0;
-            let enProceso = 0;
-            let resueltos = 0;
+            const pendientes = reclamos.filter(
+                reclamo => reclamo.status === "Pending"
+            ).length;
 
-            filas.forEach(function (fila) {
-                const estado =
-                    fila.cells[5].querySelector("select").value;
+            const enProceso = reclamos.filter(
+                reclamo => reclamo.status === "InProgress"
+            ).length;
 
-                if (estado === "Pendiente") {
-                    pendientes++;
-                } else if (estado === "En proceso") {
-                    enProceso++;
-                } else if (estado === "Resuelto") {
-                    resueltos++;
-                }
-            });
+            const resueltos = reclamos.filter(
+                reclamo => reclamo.status === "Resolved"
+            ).length;
 
             document.getElementById("totalReclamos").textContent =
-                filas.length;
+                reclamos.length;
 
             document.getElementById("totalPendientes").textContent =
                 pendientes;
@@ -485,24 +426,269 @@
                 resueltos;
         }
 
-        buscador.addEventListener("input", aplicarFiltros);
-        filtroCategoria.addEventListener("change", aplicarFiltros);
-        filtroBarrio.addEventListener("change", aplicarFiltros);
-        filtroEstado.addEventListener("change", aplicarFiltros);
-        filtroPrioridad.addEventListener("change", aplicarFiltros);
+        function aplicarFiltros() {
+            const texto = buscador.value.toLowerCase().trim();
+            const categoria = filtroCategoria.value;
+            const barrio = filtroBarrio.value;
+            const estado = filtroEstado.value;
+            const prioridad = filtroPrioridad.value;
 
-        filas.forEach(function (fila) {
-            const selectorEstado =
-                fila.cells[5].querySelector("select");
+            const filtrados = reclamos.filter(function (reclamo) {
+                const nombreCategoria =
+                    obtenerNombreCategoria(reclamo.categoryId);
 
-            selectorEstado.addEventListener("change", function () {
+                const nombreBarrio =
+                    obtenerNombreBarrio(reclamo.neighborhoodId);
+
+                const contenido = [
+                    reclamo.id,
+                    reclamo.description,
+                    reclamo.address,
+                    reclamo.summary,
+                    nombreCategoria,
+                    nombreBarrio
+                ].join(" ").toLowerCase();
+
+                const coincideBusqueda =
+                    contenido.includes(texto);
+
+                const coincideCategoria =
+                    categoria === "" ||
+                    String(reclamo.categoryId) === categoria;
+
+                const coincideBarrio =
+                    barrio === "" ||
+                    String(reclamo.neighborhoodId) === barrio;
+
+                const coincideEstado =
+                    estado === "" ||
+                    reclamo.status === estado;
+
+                const coincidePrioridad =
+                    prioridad === "" ||
+                    reclamo.priority === prioridad;
+
+                return (
+                    coincideBusqueda &&
+                    coincideCategoria &&
+                    coincideBarrio &&
+                    coincideEstado &&
+                    coincidePrioridad
+                );
+            });
+
+            mostrarReclamos(filtrados);
+        }
+
+        function mostrarReclamos(lista) {
+            tabla.innerHTML = "";
+
+            lista.forEach(function (reclamo) {
+                const nombreCategoria =
+                    obtenerNombreCategoria(reclamo.categoryId);
+
+                const nombreBarrio =
+                    obtenerNombreBarrio(reclamo.neighborhoodId);
+
+                const prioridad =
+                    prioridades[reclamo.priority] || reclamo.priority;
+
+                let clasePrioridad = "";
+
+                if (reclamo.priority === "High") {
+                    clasePrioridad = "priority-high";
+                } else if (reclamo.priority === "Medium") {
+                    clasePrioridad = "priority-medium";
+                } else if (reclamo.priority === "Low") {
+                    clasePrioridad = "priority-low";
+                }
+
+                const fila = document.createElement("tr");
+
+                fila.innerHTML = `
+                    <td>#${escaparHTML(reclamo.id)}</td>
+
+                    <td>
+                        ${escaparHTML(reclamo.description)}
+                    </td>
+
+                    <td>
+                        ${escaparHTML(nombreCategoria)}
+                    </td>
+
+                    <td>
+                        ${escaparHTML(nombreBarrio)}
+                    </td>
+
+                    <td class="${clasePrioridad}">
+                        ${escaparHTML(prioridad)}
+                    </td>
+
+                    <td>
+                        <select class="status-select">
+                            <option value="Pending">Pendiente</option>
+                            <option value="InProgress">En proceso</option>
+                            <option value="Resolved">Resuelto</option>
+                        </select>
+                    </td>
+                `;
+
+                const selectorEstado =
+                    fila.querySelector(".status-select");
+
+                selectorEstado.value = reclamo.status;
+
+                // GUARDAR CAMBIO DE ESTADO EN LA API
+                selectorEstado.addEventListener("change", async function () {
+                    const estadoAnterior = reclamo.status;
+                    const nuevoEstado = selectorEstado.value;
+
+                    if (nuevoEstado === estadoAnterior) {
+                        return;
+                    }
+
+                    selectorEstado.disabled = true;
+
+                    try {
+                        const respuesta = await fetch(
+                            `${API_URL}/reports/${reclamo.id}/status`,
+                            {
+                                method: "PATCH",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(nuevoEstado)
+                            }
+                        );
+
+                        if (!respuesta.ok) {
+                            const detalle = await respuesta.text();
+                            throw new Error(
+                                `Error HTTP ${respuesta.status}: ${detalle}`
+                            );
+                        }
+
+                        reclamo.status = nuevoEstado;
+
+                        actualizarIndicadores();
+                        aplicarFiltros();
+
+                        console.log(
+                            `Estado del reclamo #${reclamo.id} guardado:`,
+                            nuevoEstado
+                        );
+
+                    } catch (error) {
+                        console.error(
+                            "Error al guardar el estado:",
+                            error
+                        );
+
+                        reclamo.status = estadoAnterior;
+                        selectorEstado.value = estadoAnterior;
+
+                        alert(
+                            "No se pudo guardar el cambio de estado. " +
+                            "Verificá que la API esté funcionando."
+                        );
+
+                    } finally {
+                        selectorEstado.disabled = false;
+                    }
+                });
+
+                tabla.appendChild(fila);
+            });
+
+            sinResultados.style.display =
+                lista.length === 0 ? "block" : "none";
+        }
+
+        async function obtenerDatos() {
+            sinResultados.style.display = "none";
+
+            try {
+                const respuestas = await Promise.all([
+                    fetch(`${API_URL}/reports`),
+                    fetch(`${API_URL}/categories`),
+                    fetch(`${API_URL}/neighborhoods`)
+                ]);
+
+                for (const respuesta of respuestas) {
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            `Error HTTP ${respuesta.status}`
+                        );
+                    }
+                }
+
+                const datos = await Promise.all(
+                    respuestas.map(respuesta => respuesta.json())
+                );
+
+                reclamos = datos[0];
+                categorias = datos[1];
+                barrios = datos[2];
+
+                console.log(
+                    "Reclamos reales de PostgreSQL:",
+                    reclamos
+                );
+
+                cargarOpciones(
+                    filtroCategoria,
+                    categorias,
+                    "Todas las categorías"
+                );
+
+                cargarOpciones(
+                    filtroBarrio,
+                    barrios,
+                    "Todos los barrios"
+                );
+
                 actualizarIndicadores();
                 aplicarFiltros();
-            });
-        });
 
-        actualizarIndicadores();
-        aplicarFiltros();
+            } catch (error) {
+                console.error(
+                    "Error al conectar con la API:",
+                    error
+                );
+
+                tabla.innerHTML = "";
+
+                sinResultados.textContent =
+                    "No se pudieron cargar los reclamos. " +
+                    "Verificá que la API esté funcionando.";
+
+                sinResultados.style.display = "block";
+            }
+        }
+
+        buscador.addEventListener("input", aplicarFiltros);
+
+        filtroCategoria.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        filtroBarrio.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        filtroEstado.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        filtroPrioridad.addEventListener(
+            "change",
+            aplicarFiltros
+        );
+
+        obtenerDatos();
     </script>
 
 </body>
