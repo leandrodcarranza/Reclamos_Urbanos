@@ -1,6 +1,9 @@
 ﻿using ReclamosUrbanos.BusinessLogic.Services;
 using ReclamosUrbanos.DataAccess.Stores;
 using ReclamosUrbanos.Entities;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ReclamosUrbanos.BusinessLogic.Managers;
 
@@ -68,25 +71,61 @@ public class ReportAnalysisManager : IReportAnalysisManager
         if (summary.Length == 0)
             summary = description;
 
+        var isEmergency = analysis.IsEmergency || LooksLikeEmergency(description);
+
         return new ReportAnalysis
         {
             CategoryId = categoryId,
             Priority = priority,
-            Summary = Truncate(summary, MaxSummaryLength),
+            Summary = BuildSummary(summary, isEmergency),
+            IsEmergency = isEmergency,
             UsedFallback = false
         };
     }
 
-    private static ReportAnalysis Fallback(string description) => new()
+    private static ReportAnalysis Fallback(string description)
     {
-        CategoryId = null,
-        Priority = Priority.Medium,
-        Summary = Truncate(description, MaxSummaryLength),
-        UsedFallback = true
-    };
+        var isEmergency = LooksLikeEmergency(description);
+
+        return new ReportAnalysis
+        {
+            CategoryId = null,
+            Priority = Priority.Medium,
+            Summary = BuildSummary(description, isEmergency),
+            IsEmergency = isEmergency,
+            UsedFallback = true
+        };
+    }
 
     private static string Truncate(string text, int maxLength) =>
         text.Length <= maxLength
             ? text
             : text[..(maxLength - 3)].TrimEnd() + "...";
+
+    private const string EmergencyNotice = "Ante una emergencia, llamá al 911.";
+
+    // Red de seguridad: detecta emergencias aunque la IA falle o no las marque.
+    private static readonly Regex EmergencyPattern = new(
+        @"\b(robos?|asaltos?|violencia|agresion(es)?|disparos?|balacera|tiroteo|incendio|herid[oa]s?|emergencia|secuestro|armas?|ambulancia|violacion|abuso|amenazas?)\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    private static bool LooksLikeEmergency(string description) =>
+        EmergencyPattern.IsMatch(RemoveAccents(description));
+
+    private static string RemoveAccents(string text)
+    {
+        var decomposed = text.Normalize(NormalizationForm.FormD);
+        var chars = decomposed.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark);
+        return new string(chars.ToArray()).Normalize(NormalizationForm.FormC);
+    }
+
+    private static string BuildSummary(string summary, bool isEmergency)
+    {
+        if (!isEmergency)
+            return Truncate(summary, MaxSummaryLength);
+
+        // El aviso se agrega por código y el total respeta el límite de 200 caracteres.
+        var room = MaxSummaryLength - EmergencyNotice.Length - 1;
+        return $"{Truncate(summary, room)} {EmergencyNotice}";
+    }
 }

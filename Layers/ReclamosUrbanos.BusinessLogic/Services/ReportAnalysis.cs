@@ -14,4 +14,6 @@ public class ReportAnalysis
 
     /// <summary>True si la IA falló y se devolvió el plan B.</summary>
     public bool UsedFallback { get; set; }
+
+    public bool IsEmergency { get; set; }
 }
